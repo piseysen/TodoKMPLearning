@@ -1,9 +1,10 @@
 package com.piseysen.todtoapp.presentaion.screen.task
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -12,7 +13,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,8 +32,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.piseysen.todtoapp.domain.TaskAction
 import com.piseysen.todtoapp.domain.ToDoTask
 
-const val DEFAULT_TITLE = "Enter the Title"
-const val DEFAULT_DESCRIPTION = "Add some description"
+const val DEFAULT_TITLE = "My Task"
+const val DEFAULT_DESCRIPTION = "Task details"
 
 data class TaskScreen(val task: ToDoTask? = null) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -39,26 +42,16 @@ data class TaskScreen(val task: ToDoTask? = null) : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val viewModel = getScreenModel<TaskViewModel>()
         var currentTitle by remember {
-            mutableStateOf(task?.title ?: DEFAULT_TITLE)
+            mutableStateOf(task?.title ?: "")
         }
         var currentDescription by remember {
-            mutableStateOf(task?.description ?: DEFAULT_DESCRIPTION)
+            mutableStateOf(task?.description ?: "")
         }
 
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = {
-                        BasicTextField(
-                            textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = MaterialTheme.typography.titleLarge.fontSize
-                            ),
-                            singleLine = true,
-                            value = currentTitle,
-                            onValueChange = { currentTitle = it }
-                        )
-                    },
+                    title = { Text(if (task != null) "Edit Task" else "New Task") },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
@@ -70,7 +63,7 @@ data class TaskScreen(val task: ToDoTask? = null) : Screen {
                 )
             },
             floatingActionButton = {
-                if (currentTitle.isNotEmpty() && currentDescription.isNotEmpty()) {
+                if (currentTitle.isNotBlank() && currentDescription.isNotBlank()) {
                     FloatingActionButton(
                         onClick = {
                             if (task != null) {
@@ -99,27 +92,46 @@ data class TaskScreen(val task: ToDoTask? = null) : Screen {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Checkmark Icon"
+                            contentDescription = "Save Task"
                         )
                     }
                 }
             }
         ) { padding ->
-            BasicTextField(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(all = 24.dp)
+                    .padding(all = 16.dp)
                     .padding(
                         top = padding.calculateTopPadding(),
                         bottom = padding.calculateBottomPadding()
-                    ),
-                textStyle = TextStyle(
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                value = currentDescription,
-                onValueChange = { description -> currentDescription = description }
-            )
+                    )
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    value = currentTitle,
+                    onValueChange = { currentTitle = it },
+                    label = { Text("Title") },
+                    placeholder = { Text(DEFAULT_TITLE) },
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.titleMedium,
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    value = currentDescription,
+                    onValueChange = { currentDescription = it },
+                    label = { Text("Description") },
+                    placeholder = { Text(DEFAULT_DESCRIPTION) },
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
         }
     }
 }
